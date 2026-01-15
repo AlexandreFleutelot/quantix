@@ -1,13 +1,40 @@
+use wgpu;
+use pollster;
+
 use pyo3::prelude::*;
 
-/// A Python module implemented in Rust.
-#[pymodule]
-mod Quantix {
-    use pyo3::prelude::*;
 
-    /// Formats the sum of two numbers as string.
-    #[pyfunction]
-    fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
-        Ok((a + b).to_string())
+#[pyfunction]
+fn check_gpu() -> PyResult<()> {
+    pollster::block_on(run_gpu_setup());
+    Ok(())
+}
+
+#[pymodule]
+fn quantix(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(check_gpu, m)?)?;
+    Ok(())
+}
+
+pub async fn run_gpu_setup() {
+    let instance = wgpu::Instance::default();
+    let adapter = instance.request_adapter(
+        &wgpu::RequestAdapterOptions {
+            power_preference: wgpu::PowerPreference::HighPerformance,
+            ..Default::default()
+        },
+    ).await.expect("Echec de la recherche d'un adapter GPU");
+
+    let info = adapter.get_info();
+    println!("GPU selectionne : {:?} sur backend {:?}", info.name, info.backend);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_gpu_setup() {
+        pollster::block_on(run_gpu_setup());
     }
 }
