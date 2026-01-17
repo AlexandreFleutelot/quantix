@@ -6,12 +6,8 @@ dist/
 wheels/
 *.egg-info
 
-# Virtual environments
+# Virtual environments (Python)
 .venv
 
 # Rust build artifacts
 target/
-
-# LLM/AI assistant files
-.windsurfrules
-*.md
